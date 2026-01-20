@@ -101,3 +101,138 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the Personal Finance App '6 Jarros' at https://private-money-2.preview.emergentagent.com - This is a 100% offline finance app with the 6 Jars budgeting system. Test comprehensive functionality including initial state, add income flow, plant growth, transaction history, delete transactions, theme toggle, LF growth chart, tooltips, and responsive design."
+
+frontend:
+  - task: "Initial State Verification"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Dashboard.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify app loads correctly with header showing '6 Jarros' and '100% Offline', Balance Total shows $0.00 USD, plant shows 'Semilla' stage with $0-$100 USD range, and all 6 jar cards show $0.00 USD"
+
+  - task: "Add Income Flow"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/AddIncomeForm.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test clicking 'Agregar Ingreso' button, filling amount (500 USD) and description ('Pago freelance'), verifying distribution preview shows correct percentages, submitting form, verifying toast notification, and checking jar updates"
+
+  - task: "Plant Growth System"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/PlantVisualization.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test plant stage changes based on LF balance: Semilla ($0-$100), Brote ($101-$1000), Árbol (+$1000). Test with multiple income additions to verify plant evolution"
+
+  - task: "Transaction History"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/TransactionHistory.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify transactions appear in history with amount, description, and date after adding income"
+
+  - task: "Delete Transaction (Undo)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/TransactionHistory.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test clicking trash icon on transaction, confirming deletion in dialog, verifying amounts are subtracted from all jars, and transaction is removed from history"
+
+  - task: "Theme Toggle"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Header.jsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test clicking theme toggle button (sun/moon icon) in header and verify app switches between light and dark mode with appropriate color changes"
+
+  - task: "LF Growth Chart"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/LFChart.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify line chart shows data points after adding transactions and displays growth trend of Libertad Financiera"
+
+  - task: "Tooltips System"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Dashboard.jsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test hovering over '¿Cómo funciona?' to see 6 Jars system explanation and hovering over info icon next to 'Tu Planta de la Riqueza' for plant stages info"
+
+  - task: "Responsive Design"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Header.jsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify mobile header shows Balance Total below the main header and responsive layout works correctly"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+
+test_plan:
+  current_focus:
+    - "Initial State Verification"
+    - "Add Income Flow"
+    - "Plant Growth System"
+    - "Transaction History"
+    - "Delete Transaction (Undo)"
+    - "Theme Toggle"
+    - "LF Growth Chart"
+    - "Tooltips System"
+    - "Responsive Design"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Starting comprehensive testing of Personal Finance App '6 Jarros'. Will test all functionality including initial state, income flow, plant growth, transaction management, theme toggle, charts, tooltips, and responsive design. Testing will be performed using Playwright automation."

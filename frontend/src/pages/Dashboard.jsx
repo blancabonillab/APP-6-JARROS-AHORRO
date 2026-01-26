@@ -6,6 +6,7 @@ import { JarCard } from '../components/JarCard';
 import { AddIncomeForm } from '../components/AddIncomeForm';
 import { TransactionHistory } from '../components/TransactionHistory';
 import { LFChart } from '../components/LFChart';
+import { BackupManager } from '../components/BackupManager';
 import { useFinance, JAR_INFO } from '../context/FinanceContext';
 import { Card, CardContent } from '../components/ui/card';
 import { Separator } from '../components/ui/separator';
@@ -106,6 +107,8 @@ export const Dashboard = () => {
                     • 10% Educación<br />
                     • 10% Ocio<br />
                     • 5% Dar
+                    <br /><br />
+                    <strong>Usa los botones + y -</strong> en cada jarro para agregar ingresos extras o hacer retiros.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -129,7 +132,7 @@ export const Dashboard = () => {
         
         {/* Chart and History Grid */}
         <motion.section 
-          className="grid lg:grid-cols-2 gap-6"
+          className="grid lg:grid-cols-2 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -141,13 +144,22 @@ export const Dashboard = () => {
           <TransactionHistory />
         </motion.section>
         
+        {/* Backup Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <BackupManager />
+        </motion.section>
+        
         {/* Footer */}
         <footer className="mt-12 py-6 text-center">
           <p className="text-sm text-muted-foreground">
             Tus datos permanecen 100% en tu dispositivo
           </p>
           <p className="text-xs text-muted-foreground/60 mt-1">
-            Sistema de los 6 Jarros • Privacidad Total
+            Sistema de los 6 Jarros • Privacidad Total • by BCBB
           </p>
         </footer>
       </main>

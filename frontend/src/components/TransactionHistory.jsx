@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
+import { Badge } from './ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,11 +15,57 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './ui/alert-dialog';
-import { useFinance } from '../context/FinanceContext';
-import { Trash2, History, Calendar, DollarSign, FileText, AlertTriangle } from 'lucide-react';
+import { useFinance, JAR_INFO, TRANSACTION_TYPES } from '../context/FinanceContext';
+import { 
+  Trash2, 
+  History, 
+  Calendar, 
+  DollarSign, 
+  FileText, 
+  AlertTriangle,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Layers
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+
+const TransactionIcon = ({ type }) => {
+  switch (type) {
+    case TRANSACTION_TYPES.INCOME_DISTRIBUTED:
+      return <Layers className="w-5 h-5 text-primary" />;
+    case TRANSACTION_TYPES.INCOME_DIRECT:
+      return <ArrowDownCircle className="w-5 h-5 text-success" />;
+    case TRANSACTION_TYPES.WITHDRAWAL:
+      return <ArrowUpCircle className="w-5 h-5 text-destructive" />;
+    default:
+      return <DollarSign className="w-5 h-5 text-primary" />;
+  }
+};
+
+const TransactionBadge = ({ type, jar }) => {
+  const getTypeInfo = () => {
+    switch (type) {
+      case TRANSACTION_TYPES.INCOME_DISTRIBUTED:
+        return { label: '6 Jarros', variant: 'default', className: 'bg-primary/10 text-primary border-primary/20' };
+      case TRANSACTION_TYPES.INCOME_DIRECT:
+        return { label: jar ? JAR_INFO[jar]?.name : 'Ingreso', variant: 'outline', className: 'bg-success/10 text-success border-success/20' };
+      case TRANSACTION_TYPES.WITHDRAWAL:
+        return { label: jar ? JAR_INFO[jar]?.name : 'Retiro', variant: 'outline', className: 'bg-destructive/10 text-destructive border-destructive/20' };
+      default:
+        return { label: 'Transacción', variant: 'secondary', className: '' };
+    }
+  };
+  
+  const { label, className } = getTypeInfo();
+  
+  return (
+    <Badge variant="outline" className={`text-xs ${className}`}>
+      {label}
+    </Badge>
+  );
+};
 
 const TransactionItem = ({ transaction, onDelete, index }) => {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -33,6 +80,7 @@ const TransactionItem = ({ transaction, onDelete, index }) => {
   };
   
   const fecha = new Date(transaction.fecha);
+  const isWithdrawal = transaction.type === TRANSACTION_TYPES.WITHDRAWAL;
   
   return (
     <motion.div
@@ -44,16 +92,21 @@ const TransactionItem = ({ transaction, onDelete, index }) => {
     >
       <div className={`group flex items-center gap-4 p-4 rounded-lg border border-border/50 bg-card hover:bg-muted/50 transition-colors duration-200 ${isDeleting ? 'opacity-50' : ''}`}>
         {/* Icon */}
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <DollarSign className="w-5 h-5 text-primary" />
+        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+          isWithdrawal ? 'bg-destructive/10' : 
+          transaction.type === TRANSACTION_TYPES.INCOME_DIRECT ? 'bg-success/10' : 
+          'bg-primary/10'
+        }`}>
+          <TransactionIcon type={transaction.type} />
         </div>
         
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="font-medium text-foreground truncate">
               {transaction.descripcion}
             </p>
+            <TransactionBadge type={transaction.type} jar={transaction.jar} />
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
             <Calendar className="w-3 h-3" />
@@ -65,8 +118,8 @@ const TransactionItem = ({ transaction, onDelete, index }) => {
         
         {/* Amount */}
         <div className="flex-shrink-0 text-right">
-          <p className="font-heading font-bold text-success">
-            +${transaction.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <p className={`font-heading font-bold ${isWithdrawal ? 'text-destructive' : 'text-success'}`}>
+            {isWithdrawal ? '-' : '+'}${transaction.monto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="text-xs text-muted-foreground">USD</p>
         </div>
@@ -90,9 +143,16 @@ const TransactionItem = ({ transaction, onDelete, index }) => {
                 ¿Eliminar transacción?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acción revertirá los saldos de todos los jarros. Se restará 
-                <span className="font-medium text-foreground"> ${transaction.monto.toLocaleString('en-US', { minimumFractionDigits: 2 })} </span>
-                proporcionalmente de cada jarro.
+                Esta acción revertirá los saldos. 
+                {transaction.type === TRANSACTION_TYPES.INCOME_DISTRIBUTED && (
+                  <span> Se restará <strong>${transaction.monto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong> proporcionalmente de cada jarro.</span>
+                )}
+                {transaction.type === TRANSACTION_TYPES.INCOME_DIRECT && (
+                  <span> Se restará <strong>${transaction.monto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong> de {JAR_INFO[transaction.jar]?.name}.</span>
+                )}
+                {transaction.type === TRANSACTION_TYPES.WITHDRAWAL && (
+                  <span> Se devolverá <strong>${transaction.monto.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong> a {JAR_INFO[transaction.jar]?.name}.</span>
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -114,6 +174,16 @@ const TransactionItem = ({ transaction, onDelete, index }) => {
 export const TransactionHistory = () => {
   const { historial, deleteTransaction } = useFinance();
   
+  // Calculate totals
+  const totals = historial.reduce((acc, t) => {
+    if (t.type === TRANSACTION_TYPES.WITHDRAWAL) {
+      acc.egresos += t.monto;
+    } else {
+      acc.ingresos += t.monto;
+    }
+    return acc;
+  }, { ingresos: 0, egresos: 0 });
+  
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
@@ -121,6 +191,24 @@ export const TransactionHistory = () => {
           <History className="w-5 h-5 text-primary" />
           Historial de Transacciones
         </CardTitle>
+        
+        {/* Totals */}
+        {historial.length > 0 && (
+          <div className="flex gap-4 mt-2">
+            <div className="text-sm">
+              <span className="text-muted-foreground">Ingresos: </span>
+              <span className="font-medium text-success">
+                +${totals.ingresos.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div className="text-sm">
+              <span className="text-muted-foreground">Egresos: </span>
+              <span className="font-medium text-destructive">
+                -${totals.egresos.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {historial.length === 0 ? (

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Cuerpo de la alcancía -->
+  <ellipse cx="32" cy="36" rx="24" ry="18" fill="#5321BF"/>
+  <!-- Brillo -->
+  <ellipse cx="24" cy="30" rx="8" ry="5" fill="#7B4FD6" opacity="0.6"/>
+  <!-- Orejas -->
+  <ellipse cx="14" cy="22" rx="5" ry="7" fill="#411F8C"/>
+  <ellipse cx="50" cy="22" rx="5" ry="7" fill="#411F8C"/>
+  <!-- Hocico -->
+  <ellipse cx="32" cy="42" rx="8" ry="6" fill="#FFB6C1"/>
+  <!-- Fosas nasales -->
+  <circle cx="29" cy="42" r="1.5" fill="#2D1859"/>
+  <circle cx="35" cy="42" r="1.5" fill="#2D1859"/>
+  <!-- Ojos -->
+  <circle cx="24" cy="32" r="3" fill="#2D2440"/>
+  <circle cx="40" cy="32" r="3" fill="#2D2440"/>
+  <circle cx="25" cy="31" r="1" fill="#fff"/>
+  <circle cx="41" cy="31" r="1" fill="#fff"/>
+  <!-- Ranura para monedas -->
+  <rect x="26" y="18" width="12" height="3" rx="1.5" fill="#2D1859"/>
+  <!-- Patas -->
+  <rect x="16" y="50" width="6" height="8" rx="2" fill="#411F8C"/>
+  <rect x="42" cy="50" width="6" height="8" rx="2" fill="#411F8C"/>
+  <!-- Moneda entrando -->
+  <ellipse cx="32" cy="12" rx="6" ry="2" fill="#FFD700"/>
+  <ellipse cx="32" cy="11" rx="5" ry="1.5" fill="#FFF59D"/>
+  <!-- Cola rizada -->
+  <path d="M54 36 Q60 32 58 26 Q56 20 60 18" stroke="#411F8C" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

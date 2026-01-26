@@ -1,21 +1,18 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import { Dashboard } from './pages/Dashboard';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
-// Basename para GitHub Pages
-const basename = process.env.PUBLIC_URL || '';
-
 function App() {
   return (
     <FinanceProvider>
-      <BrowserRouter basename={basename}>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
       <Toaster 
         position="bottom-right"
         toastOptions={{

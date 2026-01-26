@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://blancabonillab.github.io/APP-6-JARROS-AHORRO",
+  "homepage": ".",
   "engines": {
     "node": "20.x"
   },

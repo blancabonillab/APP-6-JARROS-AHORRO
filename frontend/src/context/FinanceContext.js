@@ -16,7 +16,7 @@ const initialState = {
     PLAY: 0,     // Ocio - 10%
     DAR: 0,      // Dar - 5%
   },
-  // Transaction history
+  // Transaction history (all types)
   historial_transacciones: [],
   // LF history for chart
   historial_lf: [],
@@ -80,12 +80,22 @@ export const JAR_INFO = {
   },
 };
 
+// Transaction types
+export const TRANSACTION_TYPES = {
+  INCOME_DISTRIBUTED: 'INCOME_DISTRIBUTED',  // Ingreso distribuido en 6 jarros
+  INCOME_DIRECT: 'INCOME_DIRECT',            // Ingreso directo a un jarro
+  WITHDRAWAL: 'WITHDRAWAL',                   // Retiro de un jarro
+};
+
 // Action types
 const ACTIONS = {
   ADD_INCOME: 'ADD_INCOME',
+  ADD_DIRECT_INCOME: 'ADD_DIRECT_INCOME',
+  WITHDRAW_FROM_JAR: 'WITHDRAW_FROM_JAR',
   DELETE_TRANSACTION: 'DELETE_TRANSACTION',
   SET_THEME: 'SET_THEME',
   LOAD_STATE: 'LOAD_STATE',
+  IMPORT_BACKUP: 'IMPORT_BACKUP',
 };
 
 // Reducer function
@@ -104,10 +114,12 @@ function financeReducer(state, action) {
       // Create transaction record
       const transaction = {
         id: generateId(),
+        type: TRANSACTION_TYPES.INCOME_DISTRIBUTED,
         fecha: timestamp.toISOString(),
         monto: monto,
         descripcion: descripcion,
         distribution: distribution,
+        jar: null, // Distributed to all
       };
       
       // Calculate new balances
@@ -133,17 +145,110 @@ function financeReducer(state, action) {
       };
     }
     
+    case ACTIONS.ADD_DIRECT_INCOME: {
+      const { monto, descripcion, jar } = action.payload;
+      const timestamp = new Date();
+      
+      // Create transaction record
+      const transaction = {
+        id: generateId(),
+        type: TRANSACTION_TYPES.INCOME_DIRECT,
+        fecha: timestamp.toISOString(),
+        monto: monto,
+        descripcion: descripcion,
+        distribution: null,
+        jar: jar,
+      };
+      
+      // Calculate new balance for specific jar
+      const newSaldos = { ...state.saldos };
+      newSaldos[jar] = (newSaldos[jar] || 0) + monto;
+      
+      // Update LF history if it's LF jar
+      let newHistorialLF = state.historial_lf;
+      if (jar === 'LF') {
+        newHistorialLF = [
+          ...state.historial_lf,
+          {
+            fecha: timestamp.toISOString(),
+            saldo: newSaldos.LF,
+          }
+        ];
+      }
+      
+      return {
+        ...state,
+        saldos: newSaldos,
+        historial_transacciones: [transaction, ...state.historial_transacciones],
+        historial_lf: newHistorialLF,
+      };
+    }
+    
+    case ACTIONS.WITHDRAW_FROM_JAR: {
+      const { monto, descripcion, jar } = action.payload;
+      const timestamp = new Date();
+      
+      // Check if enough balance
+      if (state.saldos[jar] < monto) {
+        return state; // Not enough balance
+      }
+      
+      // Create transaction record
+      const transaction = {
+        id: generateId(),
+        type: TRANSACTION_TYPES.WITHDRAWAL,
+        fecha: timestamp.toISOString(),
+        monto: monto,
+        descripcion: descripcion,
+        distribution: null,
+        jar: jar,
+      };
+      
+      // Calculate new balance for specific jar
+      const newSaldos = { ...state.saldos };
+      newSaldos[jar] = Math.max(0, (newSaldos[jar] || 0) - monto);
+      
+      // Update LF history if it's LF jar
+      let newHistorialLF = state.historial_lf;
+      if (jar === 'LF') {
+        newHistorialLF = [
+          ...state.historial_lf,
+          {
+            fecha: timestamp.toISOString(),
+            saldo: newSaldos.LF,
+          }
+        ];
+      }
+      
+      return {
+        ...state,
+        saldos: newSaldos,
+        historial_transacciones: [transaction, ...state.historial_transacciones],
+        historial_lf: newHistorialLF,
+      };
+    }
+    
     case ACTIONS.DELETE_TRANSACTION: {
       const { transactionId } = action.payload;
       const transaction = state.historial_transacciones.find(t => t.id === transactionId);
       
       if (!transaction) return state;
       
-      // Reverse the distribution (subtract)
       const newSaldos = { ...state.saldos };
-      Object.keys(transaction.distribution).forEach(jar => {
-        newSaldos[jar] = Math.max(0, (newSaldos[jar] || 0) - transaction.distribution[jar]);
-      });
+      
+      // Reverse based on transaction type
+      if (transaction.type === TRANSACTION_TYPES.INCOME_DISTRIBUTED) {
+        // Reverse the distribution (subtract from all jars)
+        Object.keys(transaction.distribution).forEach(jar => {
+          newSaldos[jar] = Math.max(0, (newSaldos[jar] || 0) - transaction.distribution[jar]);
+        });
+      } else if (transaction.type === TRANSACTION_TYPES.INCOME_DIRECT) {
+        // Subtract from specific jar
+        newSaldos[transaction.jar] = Math.max(0, (newSaldos[transaction.jar] || 0) - transaction.monto);
+      } else if (transaction.type === TRANSACTION_TYPES.WITHDRAWAL) {
+        // Add back to specific jar (reverse withdrawal)
+        newSaldos[transaction.jar] = (newSaldos[transaction.jar] || 0) + transaction.monto;
+      }
       
       // Remove transaction
       const newHistorial = state.historial_transacciones.filter(t => t.id !== transactionId);
@@ -177,6 +282,14 @@ function financeReducer(state, action) {
       return {
         ...initialState,
         ...action.payload,
+      };
+    }
+    
+    case ACTIONS.IMPORT_BACKUP: {
+      return {
+        ...initialState,
+        ...action.payload,
+        theme: state.theme, // Keep current theme
       };
     }
     
@@ -235,6 +348,24 @@ export function FinanceProvider({ children }) {
     });
   };
   
+  const addDirectIncome = (monto, descripcion, jar) => {
+    dispatch({
+      type: ACTIONS.ADD_DIRECT_INCOME,
+      payload: { monto, descripcion, jar },
+    });
+  };
+  
+  const withdrawFromJar = (monto, descripcion, jar) => {
+    if (state.saldos[jar] < monto) {
+      return false; // Not enough balance
+    }
+    dispatch({
+      type: ACTIONS.WITHDRAW_FROM_JAR,
+      payload: { monto, descripcion, jar },
+    });
+    return true;
+  };
+  
   const deleteTransaction = (transactionId) => {
     dispatch({
       type: ACTIONS.DELETE_TRANSACTION,
@@ -246,6 +377,57 @@ export function FinanceProvider({ children }) {
     dispatch({
       type: ACTIONS.SET_THEME,
       payload: state.theme === 'light' ? 'dark' : 'light',
+    });
+  };
+  
+  // Export backup data
+  const exportBackup = () => {
+    const backupData = {
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      data: {
+        saldos: state.saldos,
+        historial_transacciones: state.historial_transacciones,
+        historial_lf: state.historial_lf,
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `backup_6jarros_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+  
+  // Import backup data
+  const importBackup = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const backupData = JSON.parse(e.target.result);
+          
+          // Validate backup structure
+          if (!backupData.data || !backupData.data.saldos) {
+            throw new Error('Formato de backup inválido');
+          }
+          
+          dispatch({
+            type: ACTIONS.IMPORT_BACKUP,
+            payload: backupData.data,
+          });
+          
+          resolve(backupData);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+      reader.readAsText(file);
     });
   };
   
@@ -269,8 +451,12 @@ export function FinanceProvider({ children }) {
     totalBalance,
     plantStage: getPlantStage(),
     addIncome,
+    addDirectIncome,
+    withdrawFromJar,
     deleteTransaction,
     toggleTheme,
+    exportBackup,
+    importBackup,
   };
   
   return (

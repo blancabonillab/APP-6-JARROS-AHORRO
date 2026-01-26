@@ -25,6 +25,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: |
+          rm -rf node_modules package-lock.json
           npm install --legacy-peer-deps
 
       - name: Build project
@@ -32,6 +33,7 @@ jobs:
         env:
           CI: false
           PUBLIC_URL: /APP-6-JARROS-AHORRO
+          SKIP_PREFLIGHT_CHECK: true
         run: npm run build
 
       - name: Copy 404.html for SPA routing

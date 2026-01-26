@@ -5,10 +5,13 @@ import { Dashboard } from './pages/Dashboard';
 import { Toaster } from './components/ui/sonner';
 import './App.css';
 
+// Basename para GitHub Pages
+const basename = process.env.PUBLIC_URL || '';
+
 function App() {
   return (
     <FinanceProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
         </Routes>

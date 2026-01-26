@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from './ui/card';
 import { JAR_INFO } from '../context/FinanceContext';
+import { DirectIncomeForm } from './DirectIncomeForm';
+import { WithdrawForm } from './WithdrawForm';
 import { 
   Home, 
   TrendingUp, 
@@ -65,7 +67,7 @@ export const JarCard = ({ jarKey, balance, totalBalance, index = 0 }) => {
   const Icon = iconMap[info.icon];
   
   // Calculate fill percentage (for visual jar fill effect)
-  const maxForJar = totalBalance * (info.percentage / 100) * 2; // Allow some overflow
+  const maxForJar = totalBalance * (info.percentage / 100) * 2;
   const fillPercentage = maxForJar > 0 ? Math.min((balance / maxForJar) * 100, 100) : 0;
   
   return (
@@ -114,6 +116,12 @@ export const JarCard = ({ jarKey, balance, totalBalance, index = 0 }) => {
               ${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </motion.p>
             <p className="text-xs text-muted-foreground">USD</p>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="mt-3 pt-3 border-t border-border/50 flex justify-center gap-2">
+            <DirectIncomeForm jarKey={jarKey} />
+            <WithdrawForm jarKey={jarKey} />
           </div>
         </CardContent>
       </Card>
